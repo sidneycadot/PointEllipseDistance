@@ -139,10 +139,12 @@ for i in range(100000):
     try:
         ref = FullClosedForm.reference_solution(ex, ey, px, py)
         sol = FullClosedForm.solution(ex, ey, px, py)
-    except FullClosedForm.ImagError:
-        print("FAIL:", ex, ey, px, py)
+
+        error = math.sqrt((sol[0] - ref[0]) ** 2 + (sol[1] - ref[1]) ** 2)
+
+        if error > 1e-4:
+            raise RuntimeError("Error too large ({})".format(error))
+
+    except RuntimeError as exception:
+        print("Exception [{}]: ex = {}, ey = {}, px = {}, py = {}".format(exception, ex, ey, px, py))
         continue
-
-    error = math.sqrt((sol[0] - ref[0]) ** 2 + (sol[1] - ref[1]) ** 2)
-
-    assert error < 1e-10
