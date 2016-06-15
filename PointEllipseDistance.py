@@ -126,42 +126,23 @@ if False:
 
 #print(FullClosedForm.solutions(ex, ey, 2, 4))
 
-for i in range(10000):
-    ex = np.random.rand() * 10 - 5
-    ey = np.random.rand() * 10 - 5
-    px = np.random.rand() * 10 - 5
-    py = np.random.rand() * 10 - 5
+for i in range(100000):
 
-    solutions = FullClosedForm.solutions(ex, ey, px, py)
+    if i % 1000 == 0:
+        print("checked", i)
 
-    best_i = None
-    best_x = None
-    best_y = None
-    best_distance = None
-    for i in range(len(solutions)):
-        (sx, sy) = solutions[i]
-        sx = np.complex128(sx)
-        sy = np.complex128(sy)
+    ex = np.random.rand() * 20 - 10
+    ey = np.random.rand() * 20 - 10
+    px = np.random.rand() * 20 - 10
+    py = np.random.rand() * 20 - 10
 
-        if abs(sx.imag) > 1e-10 or abs(sy.imag) > 1e-10:
-            continue
-
-        sx = sx.real
-        sy = sy.real
-
-        distance = np.sqrt((sx - px) ** 2 + (sy - py) ** 2)
-
-        if best_distance is None or distance < best_distance:
-            best_i = i
-            best_x = sx
-            best_y = sy
-            best_distance = distance
-
-    if best_distance is None:
+    try:
+        ref = FullClosedForm.reference_solution(ex, ey, px, py)
+        sol = FullClosedForm.solution(ex, ey, px, py)
+    except FullClosedForm.ImagError:
+        print("FAIL:", ex, ey, px, py)
         continue
 
-    pred1 = (ex > 0) ^ (px > 0)
-    pred2 = (ex > -ey) ^ (px > 0) ^ (ex > ey) ^ (ex > 0)
+    error = math.sqrt((sol[0] - ref[0]) ** 2 + (sol[1] - ref[1]) ** 2)
 
-    print("         {:d} {:d} {:d} {:d} {:d} {:d}       {:d}       {:d} pred1 {:d}    [{:d}]".format(ex>0, ey>0, px>0, py>0, ex>ey, ex>-ey, best_i, (best_i & 1) // 1, pred1, (best_i & 1) // 1 != pred1))
-
+    assert error < 1e-10
