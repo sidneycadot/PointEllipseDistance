@@ -5,21 +5,15 @@
 #
 # Given the ellipse (x / ex) ** 2 + (y / ey) ** 2 == 1
 
-import ClosedForm
-import FullClosedForm
 import math
-import numpy as np
 import matplotlib.pyplot as plt
+import numpy as np
 
 def Sqr(x):
     return x * x
 
 def RobustLength(v0, v1):
-    return math.sqrt(v0 * v0 + v1 * v1)
-    if abs(v0) == max(abs(v0), abs(v1)):
-        return abs(v0) * math.sqrt(1 + (v1 / v0) ** 2)
-    else:
-        return abs(v1) * math.sqrt(1 + (v0 / v1) ** 2)
+    return math.hypot(v0, v1)
 
 def GetRoot(r0, z0, z1, g):
     n0 = r0 * z0
@@ -30,7 +24,11 @@ def GetRoot(r0, z0, z1, g):
     maxIterations = 100
 
     i = 0
-    while i < maxIterations:
+    while True:
+
+        if i > maxIterations:
+            raise RuntimeError("max_iterations exceeded!")
+
         s = (s0 + s1) / 2
         if s == s0 or s == s1:
             break
@@ -97,54 +95,3 @@ def DistancePointEllipse(e0, e1, y0, y1):
 #    return e0 + e1 + y0 + y1
 
 DistancePointEllipseVectorized = np.vectorize(DistancePointEllipse, otypes = [np.float64, np.float64, np.float64])
-
-if False:
-
-    print(DistancePointEllipse(ex, ey, 2, 4))
-    print(ClosedForm.distance(ex, ey, 2, 4))
-
-    x = np.linspace(-5, 5, 101)
-    y = np.linspace(-5, 5, 101)
-
-    xv, yv = np.meshgrid(x, y)
-
-    zv1 = DistancePointEllipseVectorized(ex, ey, xv, yv)
-    zv1 = zv1[2]
-
-    zv2 = ClosedForm.distance(ex, ey, xv, yv)
-
-    plt.subplot(311)
-    plt.imshow(zv1)
-    plt.colorbar()
-    plt.subplot(312)
-    plt.imshow(zv2)
-    plt.colorbar()
-    plt.subplot(313)
-    plt.imshow(zv2 - zv1)
-    plt.colorbar()
-    plt.show()
-
-#print(FullClosedForm.solutions(ex, ey, 2, 4))
-
-for i in range(100000):
-
-    if i % 1000 == 0:
-        print("checked", i)
-
-    ex = np.random.rand() * 20 - 10
-    ey = np.random.rand() * 20 - 10
-    px = np.random.rand() * 20 - 10
-    py = np.random.rand() * 20 - 10
-
-    try:
-        ref = FullClosedForm.reference_solution(ex, ey, px, py)
-        sol = FullClosedForm.solution(ex, ey, px, py)
-
-        error = math.sqrt((sol[0] - ref[0]) ** 2 + (sol[1] - ref[1]) ** 2)
-
-        if error > 1e-4:
-            raise RuntimeError("Error too large ({})".format(error))
-
-    except RuntimeError as exception:
-        print("Exception [{}]: ex = {}, ey = {}, px = {}, py = {}".format(exception, ex, ey, px, py))
-        continue
