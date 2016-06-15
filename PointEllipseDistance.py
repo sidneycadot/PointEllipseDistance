@@ -6,6 +6,7 @@
 # Given the ellipse (x / ex) ** 2 + (y / ey) ** 2 == 1
 
 import ClosedForm
+import FullClosedForm
 import math
 import numpy as np
 import matplotlib.pyplot as plt
@@ -97,29 +98,70 @@ def DistancePointEllipse(e0, e1, y0, y1):
 
 DistancePointEllipseVectorized = np.vectorize(DistancePointEllipse, otypes = [np.float64, np.float64, np.float64])
 
-ex = 2
-ey = 1
+if False:
 
-print(DistancePointEllipse(ex, ey, 2, 4))
-print(ClosedForm.distance(ex, ey, 2, 4))
+    print(DistancePointEllipse(ex, ey, 2, 4))
+    print(ClosedForm.distance(ex, ey, 2, 4))
 
-x = np.linspace(-5, 5, 101)
-y = np.linspace(-5, 5, 101)
+    x = np.linspace(-5, 5, 101)
+    y = np.linspace(-5, 5, 101)
 
-xv, yv = np.meshgrid(x, y)
+    xv, yv = np.meshgrid(x, y)
 
-zv1 = DistancePointEllipseVectorized(ex, ey, xv, yv)
-zv1 = zv1[2]
+    zv1 = DistancePointEllipseVectorized(ex, ey, xv, yv)
+    zv1 = zv1[2]
 
-zv2 = ClosedForm.distance(ex, ey, xv, yv)
+    zv2 = ClosedForm.distance(ex, ey, xv, yv)
 
-plt.subplot(311)
-plt.imshow(zv1)
-plt.colorbar()
-plt.subplot(312)
-plt.imshow(zv2)
-plt.colorbar()
-plt.subplot(313)
-plt.imshow(zv2 - zv1)
-plt.colorbar()
-plt.show()
+    plt.subplot(311)
+    plt.imshow(zv1)
+    plt.colorbar()
+    plt.subplot(312)
+    plt.imshow(zv2)
+    plt.colorbar()
+    plt.subplot(313)
+    plt.imshow(zv2 - zv1)
+    plt.colorbar()
+    plt.show()
+
+#print(FullClosedForm.solutions(ex, ey, 2, 4))
+
+for i in range(10000):
+    ex = np.random.rand() * 10 - 5
+    ey = np.random.rand() * 10 - 5
+    px = np.random.rand() * 10 - 5
+    py = np.random.rand() * 10 - 5
+
+    solutions = FullClosedForm.solutions(ex, ey, px, py)
+
+    best_i = None
+    best_x = None
+    best_y = None
+    best_distance = None
+    for i in range(len(solutions)):
+        (sx, sy) = solutions[i]
+        sx = np.complex128(sx)
+        sy = np.complex128(sy)
+
+        if abs(sx.imag) > 1e-10 or abs(sy.imag) > 1e-10:
+            continue
+
+        sx = sx.real
+        sy = sy.real
+
+        distance = np.sqrt((sx - px) ** 2 + (sy - py) ** 2)
+
+        if best_distance is None or distance < best_distance:
+            best_i = i
+            best_x = sx
+            best_y = sy
+            best_distance = distance
+
+    if best_distance is None:
+        continue
+
+    pred1 = (ex > 0) ^ (px > 0)
+    pred2 = (ex > -ey) ^ (px > 0) ^ (ex > ey) ^ (ex > 0)
+
+    print("         {:d} {:d} {:d} {:d} {:d} {:d}       {:d}       {:d} pred1 {:d}    [{:d}]".format(ex>0, ey>0, px>0, py>0, ex>ey, ex>-ey, best_i, (best_i & 1) // 1, pred1, (best_i & 1) // 1 != pred1))
+
