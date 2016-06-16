@@ -92,39 +92,40 @@ def solution(ex, ey, px, py):
     T4 = (ex - ey) * (ex + ey)
     T2 = T4**2
     T3 = T4 * (px * ex)
-    T5 = (ex*px*ey*py)
     T6 = (ex*px) ** 2
     T8 = (ey*py) ** 2
+
     T1 = T6 + T8 - T2
     T7 = 2**(1/3)*T1**2
 
-    U1 = (108*T2*T3**2-108*ex**2*px**2*T3**2+72*ex**2*T2*px**2*T1+36*T3**2*T1+2*T1**3) ** 2
-    U2 = (-12*ex**2*T2*px**2 + 12*T3**2 + T1**2) ** 3
-    U3 = ((-16*ex*px*T4) + (8*ex**3*px**3 - 8*ex*px*T1)/T4)
+    U1 = (108*T2*T3**2 - 108*ex**2*px**2*T3**2 + 72*ex**2*T2*px**2*T1 + 36*T3**2*T1 + 2*T1**3)
+    U2 = (-12*ex**2*T2*px**2 + 12*T3**2 + T1**2)
+    U3 = 2 * (ex**3*px**3 - ex*px*T1 - 2*ex*px*T2)
 
-    V1 = (108*T2*T3**2 - 108*ex**2*px**2*T3**2 + 72*ex**2*T2*px**2*T1 + 36*T3**2*T1 + 2*T1**3 + Sqrt(U1 - 4*U2)) ** (1/3)
+    V1 = (U1 + Sqrt(U1 ** 2 - 4 * U2 ** 3)) ** (1/3)
 
     W = (T1 + T7/V1 + V1/(2**(1/3))) / 3
 
     Z1 = S1 * PosSqrt(T6 - T1 + W)
 
-    ZZ = PosSqrt(2 * T6 - T1 - W + U3/(4*Z1/T4))
+    ZZ = PosSqrt(2 * T6 - T1 - W + U3 / Z1)
 
-    Y = (ex*px + Z1 + S1 * S3 * ZZ) / (2 * T4)
+    X = (ex*px + Z1 + S1 * S3 * ZZ) / (2 * T4)
 
-    Z = (-(ex**3*px)+ex*ey**2*px+ex**4*Y-2*ex**2*ey**2*Y+ey**4*Y-ey**2*py**2*Y+ex**3*px*Y**2-ex*ey**2*px*Y**2-ex**4*Y**3+2*ex**2*ey**2*Y**3-ey**4*Y**3)
+    Y = ( ex**3*px - ex*ey**2*px - ex**4*X + 2*ex**2*ey**2*X - ey**4*X + ey**2*py**2*X - ex**3*px*X**2 + ex*ey**2*px*X**2 + ex**4*X**3 - 2*ex**2*ey**2*X**3 + ey**4*X**3) / (ex*px*ey*py)
 
-    Z2 = (Z / T5) ** 2
+    denom = PosSqrt(X ** 2 + Y ** 2)
 
-    sol = (     (ex*Y)/PosSqrt(Y**2 + Z2)    ,    -(Z/(ex*px*py*PosSqrt(Y**2 + Z2)))     )
+    solx = (ex * X) / denom
+    soly = (ey * Y) / denom
 
-    if abs(sol[0].imag) >= 1e-3:
-        raise RuntimeError("Expected real, got {}".format(sol[0]))
+    if abs(solx.imag) >= 1e-3:
+        raise RuntimeError("Expected real, got {}".format(solx))
 
-    if abs(sol[1].imag) >= 1e-3:
-        raise RuntimeError("Expected real, got {}".format(sol[1]))
+    if abs(soly.imag) >= 1e-3:
+        raise RuntimeError("Expected real, got {}".format(soly))
 
-    sol = (float(sol[0].real), float(sol[1].real))
+    sol = (float(solx.real), float(soly.real))
 
     return sol
 

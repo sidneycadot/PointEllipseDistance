@@ -17,16 +17,18 @@ def test1():
     ex = 2.0
     ey = 1.0
 
-    x = np.linspace(-5, 5, 201)
-    y = np.linspace(-5, 5, 201)
+    x = np.linspace(-5, 5, 101)
+    y = np.linspace(-5, 5, 101)
 
     xv, yv = np.meshgrid(x, y)
 
     print("Calculating reference ...")
+    #zv1 = ReferenceImplementation.DistancePointEllipseVectorized(ex, ey, xv, yv)
     zv1 = ReferenceImplementation.DistancePointEllipseVectorized(ex, ey, xv, yv)
     zv1 = zv1[2]
 
     print("Calculating closed-form ...")
+    #zv2 = ClosedForm.solution_vectorized(ex, ey, xv, yv)
     zv2 = ClosedForm.solution_vectorized(ex, ey, xv, yv)
     print("Done.")
 

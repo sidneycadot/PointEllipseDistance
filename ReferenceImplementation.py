@@ -15,19 +15,17 @@ def Sqr(x):
 def RobustLength(v0, v1):
     return math.hypot(v0, v1)
 
-def GetRoot(r0, z0, z1, g):
+def GetRoot(r0, z0, z1, g, maxIterations):
     n0 = r0 * z0
     s0 = z1 - 1
     s1 = 0 if g < 0 else RobustLength(n0, z1) - 1
     s = 0
 
-    maxIterations = 100
-
     i = 0
     while True:
 
         if i > maxIterations:
-            raise RuntimeError("max_iterations exceeded!")
+            raise RuntimeError("maximum number of iterations exceeded!")
 
         s = (s0 + s1) / 2
         if s == s0 or s == s1:
@@ -47,7 +45,16 @@ def GetRoot(r0, z0, z1, g):
 
 def DistancePointEllipse(e0, e1, y0, y1):
 
-    assert e0 >= e1 > 0
+    if e0 < 0:
+        return DistancePointEllipse(-e0, e1, y0, y1)
+
+    if e1 < 0:
+        return DistancePointEllipse(e0, -e1, y0, y1)
+
+    if e0 < e1:
+        # Exchange roles of X and Y
+        (x1, x0, distance) = DistancePointEllipse(e1, e0, y1, y0)
+        return (x0, x1, distance)
 
     if y0 < 0:
         (x0, x1, distance) = DistancePointEllipse(e0, e1, -y0, y1)
@@ -57,6 +64,10 @@ def DistancePointEllipse(e0, e1, y0, y1):
         (x0, x1, distance) = DistancePointEllipse(e0, e1, y0, -y1)
         return (x0, -x1, distance)
 
+    assert e0 >= e1 > 0
+
+    maxIterations = 100
+
     if y1 > 0:
         if y0 > 0:
             z0 = y0 / e0
@@ -64,7 +75,7 @@ def DistancePointEllipse(e0, e1, y0, y1):
             g = Sqr(z0) + Sqr(z1) - 1
             if g != 0:
                 r0 = Sqr(e0 / e1)
-                sbar = GetRoot(r0, z0, z1, g)
+                sbar = GetRoot(r0, z0, z1, g, maxIterations)
                 x0 = r0 * y0 / (sbar + r0)
                 x1 = y1 / (sbar + 1)
                 distance = math.sqrt(Sqr(x0 - y0) + Sqr(x1 - y1))
@@ -82,7 +93,7 @@ def DistancePointEllipse(e0, e1, y0, y1):
         if numer0 < denom0:
             xde0 = numer0 / denom0
             x0 = e0 * xde0
-            x1 = e1 * math.sqrt(1 - xde0 * xde0)
+            x1 = e1 * math.sqrt(1 - Sqr(xde0))
             distance = math.sqrt(Sqr(x0 - y0) + Sqr(x1))
         else:
             x0 = e0
